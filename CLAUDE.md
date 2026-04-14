@@ -76,6 +76,122 @@ conversión adicional.
 
 ## Módulos
 
+### ✅ `packages/business-data` — Config JSON → Claude Tools (COMPLETADO)
+**Propósito:** Convertir cualquier negocio (productos, servicios, horarios, FAQs, PQRs) en un agente Claude totalmente funcional sin código custom.
+
+**Exports:**
+```typescript
+// src/index.ts
+export type BusinessConfig { name, description, industry?, contact, hours, products?, services?, faqs?, promotions?, policies?, staff?, agentPersonality? }
+export function buildSystemPrompt(config: BusinessConfig): string
+```
+```typescript
+// src/tools.ts (server-side only)
+export interface ServerTool { name, description, input_schema, execute(input) }
+export function createBusinessTools(config: BusinessConfig): ServerTool[]
+```
+
+**Tipos principales:**
+- `Product` — id, name, description, price, currency, category, features, available, sku, imageUrl
+- `Service` — id, name, description, price, currency, duration, category, available, requiresAppointment
+- `FAQ` — question, answer, category
+- `Promotion` — name, description, discount, validUntil, conditions, applicableTo
+- `BusinessHours` — { [day]: "HH:MM - HH:MM" }
+- `BusinessPolicies` — returns, shipping, payment, warranty
+- `StaffMember` — name, role, specialties, available
+- `BusinessContact` — phone, email, website, whatsapp, address, city, country, googleMaps
+- `PQRResult` — ticketId, type, status, createdAt, message
+
+**Herramientas autogeneradas (max 7, condicionales):**
+1. `buscar_productos` — filtrar por query, category, max_price; retorna top 6
+2. `buscar_servicios` — filtrar por query, category
+3. `consultar_horarios` — horarios generales o de un día específico
+4. `buscar_faq` — búsqueda fuzzy en preguntas + respuestas
+5. `consultar_promociones` — filtro opcional por query
+6. `registrar_pqr` — crea ticket `PQR-{timestamp_base36}` con tipo (queja/pregunta/reclamo)
+7. `consultar_equipo` — filtrar staff por specialties/role
+
+**System Prompt dinámico:**
+- Inyecta agentPersonality con placeholder `{name}`
+- Nombre, descripción, industria del negocio
+- Horarios, contacto, políticas (returns, shipping, payment, warranty)
+- Instrucciones de comportamiento (idioma, límite de oraciones, sugerencias de productos)
+
+**Uso:**
+```typescript
+import businessData from './business.example.json'
+import { buildSystemPrompt, createBusinessTools } from '@agent-forge/business-data'
+
+const systemPrompt = buildSystemPrompt(businessData)
+const tools = createBusinessTools(businessData)
+// Pasar a Claude API + frontend hook
+```
+
+### ✅ `packages/tools` — `useAgent` Hook (COMPLETADO)
+**Propósito:** Cliente React que maneja agentic loop de forma simple con SSE.
+
+**Hook signature:**
+```typescript
+export interface UseAgentOptions {
+  apiEndpoint?: string        // default: '/api/agent'
+  businessConfig?: Record<string, unknown>
+  systemPrompt?: string
+  onChunk?: (chunk: string) => void     // cada carácter/bloque de texto
+  onDone?: (fullText: string) => void   // cuando el agente termina
+  onToolCall?: (toolName: string) => void  // cuando usa una herramienta
+}
+
+export interface UseAgentReturn {
+  messages: Message[]         // historial completo
+  isThinking: boolean        // esperando respuesta Claude
+  activeToolName: string | null  // herramienta en ejecución
+  ask: (userMessage: string) => Promise<string>
+  reset: () => void
+  lastResponse: string       // último texto del agente
+}
+
+export function useAgent(options: UseAgentOptions): UseAgentReturn
+```
+
+**Flujo SSE interno:**
+- Conecta a `POST /api/agent`
+- Envía: `{ messages, systemPrompt, businessConfig }`
+- Recibe stream SSE:
+  - `data: [TOOL:nombre_herramienta]` → actualiza `activeToolName`
+  - `data: texto...` → acumula en `lastResponse`
+  - `data: [DONE]` → cierra stream, resuelve Promise
+
+**Nota clave:** Usa ref interno para evitar stale closure — historial siempre actualizado.
+
+### ✅ `apps/demo/app/api/agent/route.ts` — Agentic Loop Servidor (COMPLETADO)
+**Propósito:** Loop servidor-side de Claude con tool use (max 8 iteraciones).
+
+**Flujo:**
+```
+1. POST /api/agent { messages, systemPrompt, businessConfig }
+2. buildSystemPrompt() → system
+3. createBusinessTools(businessConfig) → tools array
+4. LOOP (hasta max 8 iteraciones):
+   a. client.messages.create({ system, messages, tools })
+   b. Si stop_reason === 'tool_use':
+      - Ejecutar todos los tool_use blocks
+      - SSE: enviar [TOOL:nombre] antes de cada herramienta
+      - Acumular resultados en tool_result
+      - Push resultados al historial → siguiente iteración
+   c. Si stop_reason === 'end_turn':
+      - Extraer texto del response
+      - Stream carácter-por-carácter como SSE
+      - Enviar [DONE]
+5. Return ReadableStream (SSE headers)
+```
+
+**Headers SSE:**
+```
+Content-Type: text/event-stream
+Cache-Control: no-cache
+Connection: keep-alive
+```
+
 ### `packages/avatar` — Avatar animado ⭐ (PRIORIDAD 1)
 - Componente React: `<AgentAvatar state="idle|listening|thinking|talking" />`
 - Implementación A: HeyGen WebRTC streaming (pro)
@@ -88,13 +204,6 @@ conversión adicional.
 - Streaming WebSocket para baja latencia
 - Expone: `speak(text)`, `stop()`, `amplitude` (para sync con avatar SVG)
 - Voz Freddy: configurar via ElevenLabs Instant Voice Clone o preset
-
-### `packages/brain` — LLM Claude
-- Hook: `useBrain({ systemPrompt, conversationId })`
-- Claude `claude-sonnet-4-6` con streaming
-- Memoria de conversación (array de mensajes en estado)
-- Expone: `ask(userMessage)`, `reset()`, `isThinking`
-- System prompts intercambiables por JSON
 
 ### `packages/voice-in` — STT
 - Hook: `useVoiceIn()`
@@ -118,23 +227,37 @@ conversión adicional.
 
 ```
 agent-forge/
-├── CLAUDE.md                    ← este archivo
-├── package.json                 ← workspace root (pnpm workspaces)
+├── CLAUDE.md                           ← este archivo
+├── README.md                           ← documentación pública
+├── package.json                        ← workspace root (pnpm workspaces)
 ├── pnpm-workspace.yaml
 ├── apps/
-│   └── demo/                   ← Next.js 14 app de demo unificada
+│   └── demo/                          ← Next.js 14 app de demo unificada
 │       ├── app/
-│       │   ├── page.tsx
+│       │   ├── page.tsx               ← demo principal con avatar Simli
 │       │   └── api/
-│       │       ├── brain/route.ts
-│       │       └── token/route.ts   ← HeyGen session token (server-side)
-│       └── .env.local
+│       │       ├── agent/route.ts     ← agentic loop servidor (tool use)
+│       │       ├── brain/route.ts     ← fallback: Claude streaming directo
+│       │       ├── voice/route.ts     ← ElevenLabs TTS WebSocket
+│       │       └── token/route.ts     ← Simli session token (server-side)
+│       ├── data/
+│       │   └── business.example.json  ← config ejemplo "TechZone Perú"
+│       ├── .env.local                 ← API keys locales
+│       └── next.config.mjs            ← transpilePackages config
 └── packages/
-    ├── avatar/                 ← @agent-forge/avatar
-    ├── voice-out/              ← @agent-forge/voice-out
-    ├── brain/                  ← @agent-forge/brain
-    ├── voice-in/               ← @agent-forge/voice-in
-    └── ui-shell/               ← @agent-forge/ui-shell
+    ├── business-data/                 ← @agent-forge/business-data ✅
+    │   ├── src/
+    │   │   ├── index.ts               ← tipos + buildSystemPrompt()
+    │   │   └── tools.ts               ← createBusinessTools()
+    │   └── package.json
+    ├── tools/                         ← @agent-forge/tools ✅
+    │   ├── src/
+    │   │   └── index.ts               ← useAgent() hook
+    │   └── package.json
+    ├── avatar/                        ← @agent-forge/avatar (next)
+    ├── voice-out/                     ← @agent-forge/voice-out (next)
+    ├── voice-in/                      ← @agent-forge/voice-in (next)
+    └── ui-shell/                      ← @agent-forge/ui-shell (next)
 ```
 
 ---
@@ -224,23 +347,97 @@ pnpm --filter "./packages/**" build
 
 ## Sesión actual — progreso
 
-- [x] Estructura de carpetas creada
-- [x] CLAUDE.md con arquitectura completa
-- [ ] Configurar pnpm workspaces + package.json raíz
-- [ ] `packages/avatar` — componente HeyGen Streaming
-- [ ] `packages/voice-out` — hook ElevenLabs
-- [ ] `packages/brain` — hook Claude API
-- [ ] `apps/demo` — app unificada
-- [ ] Conseguir credenciales HeyGen
-- [ ] Voice clone de Freddy en ElevenLabs
+### FASE 1 — Avatar Simli + Voice (COMPLETADO ✅)
+- [x] Estructura de carpetas + pnpm workspaces
+- [x] CLAUDE.md inicial con arquitectura
+- [x] `apps/demo/page.tsx` — demo con avatar Simli streaming
+- [x] `apps/demo/app/api/voice/route.ts` — ElevenLabs TTS WebSocket PCM16
+- [x] `apps/demo/app/api/token/route.ts` — Simli session token generator
+- [x] README.md con documentación completa
+- [x] GitHub push público
+
+### FASE 2 — Agentic Loop + Business Data (COMPLETADO ✅)
+- [x] `packages/business-data` — tipos + buildSystemPrompt + createBusinessTools
+- [x] `packages/tools` — useAgent hook con SSE + tool event tracking
+- [x] `apps/demo/app/api/agent/route.ts` — agentic loop servidor (max 8 iteraciones)
+- [x] `apps/demo/data/business.example.json` — config "TechZone Perú"
+- [x] Configurar next.config.mjs con transpilePackages
+- [x] GitHub actualizado con nuevos módulos
+
+### FASE 3 — Módulos Adicionales (PENDIENTE)
+- [ ] `packages/avatar` — componente HeyGen Streaming alternativo
+- [ ] `packages/voice-out` — hook ElevenLabs (exportable)
+- [ ] `packages/voice-in` — hook Web Speech API
+- [ ] `packages/ui-shell` — layout futurista reutilizable
+- [ ] `packages/doc-qa` — Q&A sobre documentos (fase 2)
 - [ ] Deploy demo en Firebase Hosting
-- [ ] Push a GitHub
+- [ ] npm publish (remover `private: true`, add tsup build)
+
+---
+
+## Guía rápida — Integrar en otro proyecto
+
+### Caso 1: Agente con herramientas para tu negocio
+```bash
+# 1. Copiar módulos a tu proyecto
+cp -r agent-forge/packages/business-data your-project/
+cp -r agent-forge/packages/tools your-project/
+
+# 2. Crear config JSON (o usar business.example.json como template)
+cp agent-forge/apps/demo/data/business.example.json your-project/data/mi-negocio.json
+
+# 3. Copiar API route
+cp agent-forge/apps/demo/app/api/agent/route.ts your-project/app/api/
+
+# 4. En tu página React:
+import { useAgent } from '@agent-forge/tools'
+import { buildSystemPrompt } from '@agent-forge/business-data'
+import businessData from './data/mi-negocio.json'
+
+export function MyAgent() {
+  const { ask, messages, activeToolName } = useAgent({
+    systemPrompt: buildSystemPrompt(businessData),
+    businessConfig: businessData,
+  })
+  
+  return (
+    <div>
+      <input onEnter={(e) => ask(e.currentTarget.value)} />
+      {activeToolName && <p>Usando: {activeToolName}</p>}
+      {messages.map(m => <div key={m.id}>{m.content}</div>)}
+    </div>
+  )
+}
+```
+
+### Caso 2: Avatar Simli + Agente
+```bash
+# Adicional a lo anterior:
+# 1. Configurar .env.local (ver sección Credenciales)
+# 2. Copiar page.tsx de demo como base
+cp agent-forge/apps/demo/app/page.tsx your-project/
+
+# 3. Conectar avatar a useAgent hook (ver demos/app/page.tsx)
+```
+
+### Caso 3: Publicar módulo en npm
+```bash
+cd packages/business-data  # o /tools
+
+# 1. Remover private: true en package.json
+# 2. Agregar build script y tsup
+npm install -D tsup
+npm run build
+
+# 3. Publicar
+npm publish --access public
+```
 
 ---
 
 ## Decisiones pendientes
 
-1. **Nombre final del proyecto** — decidir al final del día antes del push a GitHub
-2. **Face ID Simli** — subir foto a `app.simli.com` y guardar UUID en .env
-3. **Voz Freddy en ElevenLabs** — Instant Voice Clone (subir ~1 min de audio) vs preset
-4. **Simli API Key** — crear cuenta en `simli.ai` → API Keys
+1. **Face ID Simli** — subir foto a `app.simli.com` y guardar UUID en .env
+2. **Voz Freddy en ElevenLabs** — Instant Voice Clone (subir ~1 min de audio) vs preset
+3. **npm publish** — remover `private: true`, agregar tsup build, subir paquetes
+4. **Firebase Hosting deploy** — para demo pública
