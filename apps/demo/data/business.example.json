@@ -1,0 +1,255 @@
+{
+  "name": "TechZone Perú",
+  "description": "Tienda especializada en tecnología, accesorios y servicios de reparación. Vendemos laptops, celulares, accesorios y ofrecemos soporte técnico personalizado.",
+  "industry": "Tecnología y Electrónica",
+  "agentPersonality": "Eres Alejandra, asesora de ventas de {name}. Eres amable, directa y conoces todos nuestros productos. Responde en español, máximo 3 oraciones, y siempre ofrece ayuda adicional o sugiere productos relacionados.",
+
+  "contact": {
+    "phone": "+51 1 234-5678",
+    "whatsapp": "+51 999 123 456",
+    "email": "ventas@techzoneperu.com",
+    "website": "https://techzoneperu.com",
+    "address": "Av. Javier Prado 1234, San Isidro",
+    "city": "Lima, Perú"
+  },
+
+  "hours": {
+    "Lunes - Viernes": "9:00 - 20:00",
+    "Sábado": "9:00 - 18:00",
+    "Domingo": "Cerrado"
+  },
+
+  "products": [
+    {
+      "id": "lap-001",
+      "name": "Laptop Lenovo IdeaPad 3",
+      "description": "Laptop para uso diario y trabajo de oficina, ideal para estudiantes y profesionales.",
+      "price": 1299,
+      "currency": "PEN",
+      "category": "Laptops",
+      "sku": "LEN-IP3-15",
+      "features": ["Intel Core i5 12va gen", "8GB RAM", "512GB SSD", "Pantalla 15.6\" Full HD", "Windows 11 Home"],
+      "available": true
+    },
+    {
+      "id": "lap-002",
+      "name": "MacBook Air M2",
+      "description": "Laptop premium de Apple con chip M2, batería de hasta 18 horas y diseño ultradelgado.",
+      "price": 5499,
+      "currency": "PEN",
+      "category": "Laptops",
+      "sku": "APPLE-MBA-M2",
+      "features": ["Chip Apple M2", "8GB RAM unificada", "256GB SSD", "Pantalla Liquid Retina 13.6\"", "macOS Ventura"],
+      "available": true
+    },
+    {
+      "id": "lap-003",
+      "name": "Laptop HP Victus Gaming",
+      "description": "Laptop gamer de entrada con GPU dedicada, perfecta para juegos modernos y diseño gráfico.",
+      "price": 2799,
+      "currency": "PEN",
+      "category": "Laptops",
+      "sku": "HP-VIC-16",
+      "features": ["AMD Ryzen 5 7535HS", "16GB RAM", "512GB SSD", "NVIDIA RTX 3050", "Pantalla 144Hz"],
+      "available": true
+    },
+    {
+      "id": "cel-001",
+      "name": "Samsung Galaxy S24",
+      "description": "Smartphone flagship Android con cámara de 50MP y procesador Snapdragon 8 Gen 3.",
+      "price": 3199,
+      "currency": "PEN",
+      "category": "Celulares",
+      "sku": "SAM-S24-128",
+      "features": ["6.2\" AMOLED 120Hz", "50MP triple cámara", "128GB almacenamiento", "5000mAh batería", "Android 14"],
+      "available": true
+    },
+    {
+      "id": "cel-002",
+      "name": "iPhone 15",
+      "description": "El iPhone más vendido con chip A16 Bionic, cámara de 48MP y Dynamic Island.",
+      "price": 4199,
+      "currency": "PEN",
+      "category": "Celulares",
+      "sku": "APL-IP15-128",
+      "features": ["6.1\" Super Retina XDR", "Cámara 48MP", "128GB", "Chip A16 Bionic", "iOS 17", "USB-C"],
+      "available": true
+    },
+    {
+      "id": "acc-001",
+      "name": "Audífonos Sony WH-1000XM5",
+      "description": "Audífonos inalámbricos premium con cancelación de ruido líder en la industria.",
+      "price": 899,
+      "currency": "PEN",
+      "category": "Accesorios",
+      "sku": "SONY-WH5",
+      "features": ["Cancelación de ruido activa", "30h batería", "Bluetooth 5.2", "Micrófono integrado"],
+      "available": true
+    },
+    {
+      "id": "acc-002",
+      "name": "Monitor LG 27\" 4K IPS",
+      "description": "Monitor profesional con resolución 4K, ideal para diseñadores y trabajo de oficina.",
+      "price": 1499,
+      "currency": "PEN",
+      "category": "Monitores",
+      "features": ["4K UHD 3840x2160", "Panel IPS", "60Hz", "HDMI + DisplayPort + USB-C"],
+      "available": true
+    },
+    {
+      "id": "acc-003",
+      "name": "Teclado Mecánico Keychron K2",
+      "description": "Teclado mecánico compacto 75% con switches Gateron, compatible con Mac y Windows.",
+      "price": 349,
+      "currency": "PEN",
+      "category": "Accesorios",
+      "features": ["Switches Gateron Brown", "Backlight RGB", "Bluetooth + USB-C", "Layout compacto 75%"],
+      "available": true
+    }
+  ],
+
+  "services": [
+    {
+      "id": "svc-001",
+      "name": "Diagnóstico técnico",
+      "description": "Evaluación completa del dispositivo para identificar fallas de hardware o software.",
+      "price": 30,
+      "currency": "PEN",
+      "duration": "1-2 horas",
+      "category": "Reparación",
+      "requiresAppointment": true,
+      "available": true
+    },
+    {
+      "id": "svc-002",
+      "name": "Formateo e instalación de Windows",
+      "description": "Formateo completo del disco, instalación de Windows 11 con drivers y programas básicos.",
+      "price": 80,
+      "currency": "PEN",
+      "duration": "2-3 horas",
+      "category": "Software",
+      "requiresAppointment": false,
+      "available": true
+    },
+    {
+      "id": "svc-003",
+      "name": "Cambio de pantalla (laptop)",
+      "description": "Reemplazo de pantalla rota o con fallas. Precio varía según modelo.",
+      "price": 150,
+      "currency": "PEN",
+      "duration": "2-4 horas",
+      "category": "Reparación",
+      "requiresAppointment": true,
+      "available": true
+    },
+    {
+      "id": "svc-004",
+      "name": "Limpieza interna y cambio de pasta térmica",
+      "description": "Limpieza profunda de polvo, cambio de pasta térmica para reducir temperatura.",
+      "price": 60,
+      "currency": "PEN",
+      "duration": "1 hora",
+      "category": "Mantenimiento",
+      "requiresAppointment": false,
+      "available": true
+    },
+    {
+      "id": "svc-005",
+      "name": "Configuración de red y WiFi empresarial",
+      "description": "Instalación y configuración de routers, switches y redes para oficinas.",
+      "price": 120,
+      "currency": "PEN",
+      "duration": "3-5 horas",
+      "category": "Redes",
+      "requiresAppointment": true,
+      "available": true
+    }
+  ],
+
+  "faqs": [
+    {
+      "question": "¿Tienen garantía los productos?",
+      "answer": "Sí, todos los productos nuevos tienen garantía de fábrica: 1 año para laptops y monitores, 6 meses para accesorios. Los equipos reparados tienen 3 meses de garantía en la mano de obra.",
+      "category": "Garantía"
+    },
+    {
+      "question": "¿Hacen delivery?",
+      "answer": "Sí, hacemos delivery en Lima Metropolitana. El costo es S/ 15 para pedidos menores a S/ 500, y gratis para pedidos mayores. El tiempo de entrega es de 24 a 48 horas hábiles.",
+      "category": "Envíos"
+    },
+    {
+      "question": "¿Aceptan tarjeta de crédito?",
+      "answer": "Aceptamos todas las tarjetas de crédito y débito (Visa, Mastercard, Amex). También transferencia bancaria, Yape, Plin y efectivo. Ofrecemos cuotas sin intereses con Visa y Mastercard a 3, 6 y 12 meses.",
+      "category": "Pagos"
+    },
+    {
+      "question": "¿Puedo traer mi equipo para revisión sin cita?",
+      "answer": "El diagnóstico básico lo hacemos sin cita en horario de oficina (Lunes a Viernes 9am-6pm). Para reparaciones mayores sí es necesaria una cita para garantizar atención inmediata.",
+      "category": "Servicio técnico"
+    },
+    {
+      "question": "¿Tienen laptops para gaming baratas?",
+      "answer": "La más económica para gaming es la HP Victus a S/ 2,799 con RTX 3050. Si buscas algo más básico para juegos menos exigentes, la Lenovo IdeaPad 3 a S/ 1,299 puede correr títulos de menor requerimiento.",
+      "category": "Productos"
+    },
+    {
+      "question": "¿Hacen cambios o devoluciones?",
+      "answer": "Aceptamos cambios en los primeros 7 días si el producto está sin uso y en su empaque original. Las devoluciones de dinero se procesan en 3-5 días hábiles.",
+      "category": "Devoluciones"
+    }
+  ],
+
+  "promotions": [
+    {
+      "name": "Promo Estudiante",
+      "description": "10% de descuento en laptops para estudiantes universitarios con carnet vigente.",
+      "discount": "10%",
+      "validUntil": "2026-12-31",
+      "conditions": "Presentar carnet universitario vigente. No acumulable con otras ofertas.",
+      "applicableTo": ["lap-001", "lap-002", "lap-003"]
+    },
+    {
+      "name": "Kit Home Office",
+      "description": "Compra laptop + monitor y llévate el teclado mecánico Keychron K2 gratis.",
+      "discount": "Teclado gratis",
+      "validUntil": "2026-05-31",
+      "conditions": "Aplicable a cualquier laptop + Monitor LG 4K. Stock limitado.",
+      "applicableTo": ["lap-001", "lap-002", "lap-003", "acc-002"]
+    },
+    {
+      "name": "Servicio técnico express",
+      "description": "Diagnóstico gratis al traer tu equipo para reparación.",
+      "discount": "S/ 30 gratis",
+      "validUntil": "2026-04-30",
+      "conditions": "Diagnóstico gratis si el equipo entra a reparación. Solo sucursal San Isidro."
+    }
+  ],
+
+  "policies": {
+    "returns": "7 días para cambios con producto sin uso y empaque original. Devolución de dinero en 3-5 días hábiles.",
+    "shipping": "Delivery en Lima Metropolitana: S/ 15 para pedidos < S/ 500, gratis para pedidos >= S/ 500. 24-48h hábiles.",
+    "payment": "Contado, transferencia, Yape, Plin, tarjeta (Visa, MC, Amex). Cuotas sin intereses 3/6/12 meses con Visa/MC.",
+    "warranty": "Productos nuevos: 1 año laptops/monitores, 6 meses accesorios. Reparaciones: 3 meses en mano de obra."
+  },
+
+  "staff": [
+    {
+      "name": "Carlos Mendoza",
+      "role": "Técnico Senior",
+      "specialties": ["Laptops Apple", "Reparación de pantallas", "Redes"],
+      "available": true
+    },
+    {
+      "name": "Alejandra Ríos",
+      "role": "Asesora de Ventas",
+      "specialties": ["Laptops gaming", "Celulares", "Accesorios"],
+      "available": true
+    },
+    {
+      "name": "Diego Torres",
+      "role": "Técnico en Software",
+      "specialties": ["Windows", "macOS", "Recuperación de datos"],
+      "available": true
+    }
+  ]
+}

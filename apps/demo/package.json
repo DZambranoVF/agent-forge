@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@agent-forge/business-data": "workspace:*",
+    "@agent-forge/tools": "workspace:*",
     "@anthropic-ai/sdk": "^0.39.0",
     "@simli/simli-react": "^1.0.0",
     "elevenlabs": "^1.59.0",
