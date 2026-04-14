@@ -1,0 +1,13 @@
+{
+  "name": "agent-forge",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "pnpm --filter demo dev",
+    "build": "pnpm --filter demo build",
+    "lint": "pnpm --filter demo lint"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
