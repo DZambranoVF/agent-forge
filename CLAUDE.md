@@ -192,6 +192,99 @@ Cache-Control: no-cache
 Connection: keep-alive
 ```
 
+### ✅ `packages/prompt-levels` — 3-Nivel Prompt Comparator (COMPLETADO)
+**Propósito:** Demostración educativa de cómo la calidad del prompt impacta la respuesta. Muestra básico vs medio vs avanzado lado a lado.
+
+**Página:** `localhost:3000/prompt-levels`
+
+**Estructura:**
+- **Básico:** Tarea sin instrucciones (raw task)
+- **Medio:** Tarea + rol + contexto + restricción de longitud
+- **Avanzado:** Rol definido + audiencia + proceso de razonamiento + restricciones explícitas + formato + ejemplos few-shot
+
+**Hook:**
+```typescript
+export function usePromptLevels() {
+  // POST /api/prompt-levels { task }
+  // Retorna: { basicResult, mediumResult, advancedResult }
+  // Cada resultado incluye: prompt usado, respuesta Claude, técnicas usadas
+}
+```
+
+**API route:** `/api/prompt-levels`
+- Recibe: `{ task: string }`
+- Genera 3 prompts en paralelo con `Promise.all()`
+- Usa Haiku model para rapidez
+- Retorna: JSON con 3 respuestas completas
+
+**UI Features:**
+- Input con 5 ejemplos precargados (botones quick-select)
+- 3 columnas responsivas (flex layout)
+- Cada columna: badge de nivel, lista de técnicas, prompt colapsable, respuesta markdown
+- Loading skeleton animado
+- Estado vacío con gradiente
+
+**Técnicas usadas:** Role definition, Few-shot examples, Output formatting, Constraint specification
+
+### ✅ `packages/prompt-designer` — System Prompt Generator (COMPLETADO)
+**Propósito:** Generar system prompts profesionales para chatbots desde un formulario estructurado. Usa meta-prompting: Claude genera el system prompt.
+
+**Página:** `localhost:3000/prompt-designer`
+
+**Formulario entrada:**
+- **Bot name** (opcional): Nombre del asistente
+- **Purpose** (obligatorio): ¿Qué hace el bot?
+- **Tone** (5 opciones): amigable, formal, técnico, empático, divertido
+- **Restrictions:** ¿Qué NO puede hacer?
+- **Response format:** Cómo estructurar respuestas
+- **Audience:** Quién usa el bot
+
+**Hook:**
+```typescript
+export function usePromptDesigner() {
+  // POST /api/prompt-designer { purpose, tone, restrictions, ... }
+  // Retorna: { systemPrompt, testConversation, techniques, analysis }
+}
+```
+
+**API route:** `/api/prompt-designer`
+- Recibe: `PromptDesignerInput` con todos los campos del formulario
+- Construye meta-prompt pidiendo a Claude que genere JSON con estructura exacta
+- Claude genera: systemPrompt completo + testConversation (3 turnos) + técnicas + análisis
+- Valida JSON con regex: `raw.match(/\{[\s\S]*\}/)`
+- Retorna: `PromptDesignerResult` listo para usar
+
+**Output:**
+```json
+{
+  "systemPrompt": "system prompt completo con rol, tono, restricciones, ejemplos few-shot",
+  "testConversation": [
+    {"role": "user", "content": "pregunta 1"},
+    {"role": "assistant", "content": "respuesta usando el system prompt"},
+    {"role": "user", "content": "pregunta 2"},
+    {"role": "assistant", "content": "respuesta 2"},
+    {"role": "user", "content": "case edge"},
+    {"role": "assistant", "content": "manejo correcto"}
+  ],
+  "techniques": ["Role definition", "Few-shot examples", "Constraint specification", ...],
+  "analysis": "explicación 2-3 oraciones de por qué es efectivo"
+}
+```
+
+**UI Features:**
+- Grid 2 columnas: formulario izquierda, resultados derecha
+- 3 presets para pruebas rápidas: Luna (e-commerce), Nexus (soporte técnico), Vita (wellness)
+- Botón "Diseñar System Prompt" (deshabilitado si falta propósito)
+- Resultados mostrados como:
+  - System prompt formateado o raw (toggle)
+  - Copiar a clipboard con feedback "Copiado!"
+  - Badges de técnicas usadas
+  - Análisis de efectividad
+  - Conversación de prueba con chat bubbles (usuario derecha, bot izquierda)
+  - Botón Regenerar para probar variantes
+
+**Técnicas usadas:** Meta-prompting, Few-shot learning, Role definition, Constraint specification, Output formatting
+
 ### `packages/avatar` — Avatar animado ⭐ (PRIORIDAD 1)
 - Componente React: `<AgentAvatar state="idle|listening|thinking|talking" />`
 - Implementación A: HeyGen WebRTC streaming (pro)
@@ -235,11 +328,17 @@ agent-forge/
 │   └── demo/                          ← Next.js 14 app de demo unificada
 │       ├── app/
 │       │   ├── page.tsx               ← demo principal con avatar Simli
+│       │   ├── prompt-levels/
+│       │   │   └── page.tsx           ← 3-nivel prompt comparator
+│       │   ├── prompt-designer/
+│       │   │   └── page.tsx           ← system prompt generator
 │       │   └── api/
 │       │       ├── agent/route.ts     ← agentic loop servidor (tool use)
 │       │       ├── brain/route.ts     ← fallback: Claude streaming directo
 │       │       ├── voice/route.ts     ← ElevenLabs TTS WebSocket
-│       │       └── token/route.ts     ← Simli session token (server-side)
+│       │       ├── token/route.ts     ← Simli session token (server-side)
+│       │       ├── prompt-levels/route.ts      ← 3 prompts en paralelo
+│       │       └── prompt-designer/route.ts    ← meta-prompt generator
 │       ├── data/
 │       │   └── business.example.json  ← config ejemplo "TechZone Perú"
 │       ├── .env.local                 ← API keys locales
@@ -254,10 +353,19 @@ agent-forge/
     │   ├── src/
     │   │   └── index.ts               ← useAgent() hook
     │   └── package.json
+    ├── prompt-levels/                 ← @agent-forge/prompt-levels ✅
+    │   ├── src/
+    │   │   └── index.ts               ← tipos + LEVEL_META + usePromptLevels()
+    │   └── package.json
+    ├── prompt-designer/               ← @agent-forge/prompt-designer ✅
+    │   ├── src/
+    │   │   └── index.ts               ← tipos + TONE_DESCRIPTIONS + usePromptDesigner()
+    │   └── package.json
     ├── avatar/                        ← @agent-forge/avatar (next)
     ├── voice-out/                     ← @agent-forge/voice-out (next)
     ├── voice-in/                      ← @agent-forge/voice-in (next)
-    └── ui-shell/                      ← @agent-forge/ui-shell (next)
+    ├── ui-shell/                      ← @agent-forge/ui-shell (next)
+    └── telegram/                      ← @agent-forge/telegram (PRÓXIMA)
 ```
 
 ---
@@ -364,12 +472,29 @@ pnpm --filter "./packages/**" build
 - [x] Configurar next.config.mjs con transpilePackages
 - [x] GitHub actualizado con nuevos módulos
 
-### FASE 3 — Módulos Adicionales (PENDIENTE)
+### FASE 3 — Prompt Engineering Demos (COMPLETADO ✅)
+- [x] `packages/prompt-levels` — 3-nivel prompt quality comparator
+- [x] `apps/demo/app/api/prompt-levels/route.ts` — 3 Claude calls en paralelo (Haiku)
+- [x] `apps/demo/app/prompt-levels/page.tsx` — 3-column UI con ejemplos quick-select
+- [x] `packages/prompt-designer` — meta-prompt system prompt generator
+- [x] `apps/demo/app/api/prompt-designer/route.ts` — Claude genera JSON completo (Haiku)
+- [x] `apps/demo/app/prompt-designer/page.tsx` — form + presets + result display
+- [x] Instalación de react-markdown en demo
+- [x] GitHub actualizado con nuevos módulos
+
+### FASE 4 — Notificaciones Telegram (PRÓXIMA)
+- [ ] `packages/telegram` — hook `useTelegramNotifier()` + tipos
+- [ ] `apps/demo/app/api/telegram/route.ts` — wrapper para Telegram Bot API
+- [ ] Integración con agentes (onToolUse, onComplete callbacks)
+- [ ] Testing con webhook local (ngrok)
+- [ ] Documentación de setup
+
+### FASE 5 — Módulos Adicionales (FUTURO)
 - [ ] `packages/avatar` — componente HeyGen Streaming alternativo
 - [ ] `packages/voice-out` — hook ElevenLabs (exportable)
 - [ ] `packages/voice-in` — hook Web Speech API
 - [ ] `packages/ui-shell` — layout futurista reutilizable
-- [ ] `packages/doc-qa` — Q&A sobre documentos (fase 2)
+- [ ] `packages/doc-qa` — Q&A sobre documentos
 - [ ] Deploy demo en Firebase Hosting
 - [ ] npm publish (remover `private: true`, add tsup build)
 
